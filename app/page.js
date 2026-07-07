@@ -10,14 +10,15 @@ export default function Home() {
     if (!input.trim()) return;
 
     const userMessage = { role: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInput("");
     setLoading(true);
 
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input }),
+      body: JSON.stringify({ messages: updatedMessages }), // sending full history now
     });
     const data = await res.json();
 
@@ -50,7 +51,7 @@ export default function Home() {
 
       <div className="flex gap-2">
         <input
-          className="flex-1 border rounded-lg px-3 py-2 text-black"
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-black"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
