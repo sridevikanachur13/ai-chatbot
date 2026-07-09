@@ -15,17 +15,34 @@ export default function Home() {
     setInput("");
     setLoading(true);
 
+    // Add an empty AI message we'll fill in as chunks arrive
+    setMessages((prev) => [...prev, { role: "ai", text: "" }]);
+
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: updatedMessages }), // sending full history now
+      body: JSON.stringify({ messages: updatedMessages }),
     });
-    const data = await res.json();
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "ai", text: data.reply || "Error getting response" },
-    ]);
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      fullText += chunk;
+
+      // Update the last message (the AI one) with the growing text
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "ai", text: fullText };
+        return updated;
+      });
+    }
+
     setLoading(false);
   }
 
