@@ -5,6 +5,7 @@ export default function Home() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [provider, setProvider] = useState("gemini");
 
   async function sendMessage() {
     if (!input.trim()) return;
@@ -21,7 +22,7 @@ export default function Home() {
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: updatedMessages }),
+      body: JSON.stringify({ messages: updatedMessages, provider }),
     });
 
     const reader = res.body.getReader();
@@ -67,6 +68,14 @@ export default function Home() {
       </div>
 
       <div className="flex gap-2">
+        <select
+          value={provider}
+          onChange={(e) => setProvider(e.target.value)}
+          className="mb-2 border rounded px-2 py-1"
+        >
+          <option value="gemini">Gemini</option>
+          <option value="groq">Groq (Llama)</option>
+        </select>
         <input
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-black"
           value={input}
