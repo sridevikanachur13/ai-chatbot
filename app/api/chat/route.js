@@ -3,24 +3,30 @@ import { google } from "@ai-sdk/google";
 import { groq } from "@ai-sdk/groq";
 
 export async function POST(request) {
-  const { messages, provider } = await request.json();
+  try {
+    const { messages, provider } = await request.json();
 
-  // Convert your frontend's {role, text} shape into the AI SDK's expected {role, content} shape
-  const formattedMessages = messages.map((msg) => ({
-    role: msg.role === "ai" ? "assistant" : "user",
-    content: msg.text,
-  }));
+    const modelMessages = messages.map((msg) => ({
+      role: msg.role,
+      content: msg.parts
+        .filter((part) => part.type === "text")
+        .map((part) => part.text)
+        .join(""),
+    }));
 
-  // THIS is the "swap providers" moment - same function, different model
-  const model =
-    provider === "groq"
-      ? groq("llama-3.3-70b-versatile")
-      : google("gemini-2.5-flash");
+    const model =
+      provider === "groq"
+        ? groq("llama-3.3-70b-versatile")
+        : google("gemini-2.5-flash");
 
-  const result = streamText({
-    model,
-    messages: formattedMessages,
-  });
+    const result = streamText({
+      model,
+      messages: modelMessages,
+    });
 
-  return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse();
+  } catch (err) {
+    console.error("🔥 REAL ERROR:", err);
+    return Response.json({ error: err.message }, { status: 500 });
+  }
 }
