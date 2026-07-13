@@ -7,10 +7,8 @@ export default function Home() {
   const [provider, setProvider] = useState("gemini");
   const [input, setInput] = useState("");
 
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-    }),
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
   });
 
   function onSubmit(e) {
@@ -35,6 +33,11 @@ export default function Home() {
       </select>
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+        {messages.length === 0 && (
+          <div className="text-gray-400 text-center mt-10">
+            Ask me anything to get started!
+          </div>
+        )}
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -52,6 +55,7 @@ export default function Home() {
         {status === "streaming" && (
           <div className="text-gray-400">Thinking...</div>
         )}
+        {error && <div className="text-red-500">Error: {error.message}</div>}
       </div>
 
       <form onSubmit={onSubmit} className="flex gap-2">

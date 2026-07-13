@@ -21,12 +21,14 @@ export async function POST(request) {
 
     const result = streamText({
       model,
+      system:
+        "You are a friendly, concise AI assistant. Keep answers clear and not overly long unless the user asks for detail.",
       messages: modelMessages,
     });
 
     return result.toUIMessageStreamResponse();
   } catch (err) {
-    console.error("🔥 REAL ERROR:", err);
+    console.error("Chat API error:", err);
     return Response.json({ error: err.message }, { status: 500 });
   }
 }
